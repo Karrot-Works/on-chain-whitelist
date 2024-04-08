@@ -1,66 +1,20 @@
-## Foundry
+## on-chain-whitelist
 
-**Foundry is a blazing fast, portable and modular toolkit for Ethereum application development written in Rust.**
+Kakarot is cool, and so should be its whitelisting solution and faucet, a completely on-chain whitelisting solution and faucet 🥕
 
-Foundry consists of:
+Instead of inviting users by sharing invitation codes, why not mint them an NFT that grants them access to Kakarot's Testnet? This is the idea behind on-chain whitelisting.
 
--   **Forge**: Ethereum testing framework (like Truffle, Hardhat and DappTools).
--   **Cast**: Swiss army knife for interacting with EVM smart contracts, sending transactions and getting chain data.
--   **Anvil**: Local Ethereum node, akin to Ganache, Hardhat Network.
--   **Chisel**: Fast, utilitarian, and verbose solidity REPL.
+### How it works
 
-## Documentation
+1. The KKRT team mints an NFT that represents an invitation to the Testnet for a user.
+2. These are soulbound to the recipient's address. This means that the NFT can only be used by the recipient and no one else.
 
-https://book.getfoundry.sh/
+### Why on-chain whitelisting?
 
-## Usage
-
-### Build
-
-```shell
-$ forge build
-```
-
-### Test
-
-```shell
-$ forge test
-```
-
-### Format
-
-```shell
-$ forge fmt
-```
-
-### Gas Snapshots
-
-```shell
-$ forge snapshot
-```
-
-### Anvil
-
-```shell
-$ anvil
-```
-
-### Deploy
-
-```shell
-$ forge script script/Counter.s.sol:CounterScript --rpc-url <your_rpc_url> --private-key <your_private_key>
-```
-
-### Cast
-
-```shell
-$ cast <subcommand>
-```
-
-### Help
-
-```shell
-$ forge --help
-$ anvil --help
-$ cast --help
-```
+1. **Security**: Invitation codes can be shared with anyone. NFTs are soulbound to the recipient's address.
+2. **Ownership**: Invitation codes are ephemeral. NFTs are owned by the recipient.
+3. **Composability**: The fact that someone has an whitelisted Kakarot NFT can be used by other purposes as well like:
+    - Airdrops
+    - Access to other services
+    - Early access to other protocols
+    - Access to certain Telegram/Discord groups
