@@ -52,10 +52,11 @@ contract WhitelistNFT is ERC721, Ownable, ERC721Burnable {
 
         // if to and owner are non zero addresses, then it is a transfer
         // we do not allow transfers
-        if (to != address(0) && owner != address(0)) {
-            require(owner == address(0), "Soulbound: Transfer not allowed");
-        }
-        
+        require(
+            !(to != address(0) && owner != address(0)),
+            "Soulbound: Transfer not allowed"
+        );
+
         return super._update(to, tokenId, auth);
     }
 }
