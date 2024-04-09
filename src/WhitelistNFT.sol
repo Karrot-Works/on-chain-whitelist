@@ -2,10 +2,11 @@
 pragma solidity ^0.8.13;
 
 import "openzeppelin-contracts/contracts/token/ERC721/ERC721.sol";
+import "openzeppelin-contracts/contracts/token/ERC721/extensions/ERC721Burnable.sol";
 import "openzeppelin-contracts/contracts/utils/Strings.sol";
 import "openzeppelin-contracts/contracts/access/Ownable.sol";
 
-contract WhitelistNFT is ERC721, Ownable {
+contract WhitelistNFT is ERC721, Ownable, ERC721Burnable {
     uint256 public currentTokenId;
 
     constructor(
@@ -38,8 +39,10 @@ contract WhitelistNFT is ERC721, Ownable {
         return super.balanceOf(owner);
     }
 
-
-    //@dev: _update is a function that is called by the internal transfer functions
+    /**
+     * @dev Called internally by _mint, _burn, _transfer and _transferFrom functions
+     * we only allow minting and burning of tokens
+     */
     function _update(
         address to,
         uint256 tokenId,
@@ -47,11 +50,12 @@ contract WhitelistNFT is ERC721, Ownable {
     ) internal override returns (address) {
         address owner = _ownerOf(tokenId);
 
-        // check if owner is zero address and to is not zero address
-        // this is to prevent transfer of soulbound NFT
-        // owner of NFT before minting is zero address
-        require(owner == address(0) && to != address(0), "Soulbound: Transfer failed");
-
+        // if to and owner are non zero addresses, then it is a transfer
+        // we do not allow transfers
+        if (to != address(0) && owner != address(0)) {
+            require(owner == address(0), "Soulbound: Transfer not allowed");
+        }
+        
         return super._update(to, tokenId, auth);
     }
 }
