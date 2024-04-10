@@ -6,7 +6,7 @@ import "openzeppelin-contracts/contracts/token/ERC721/extensions/ERC721Burnable.
 import "openzeppelin-contracts/contracts/utils/Strings.sol";
 import "openzeppelin-contracts/contracts/access/Ownable.sol";
 
-contract WhitelistNFT is ERC721, Ownable, ERC721Burnable {
+contract EarlyAccessNFT is ERC721, Ownable, ERC721Burnable {
     uint256 public currentTokenId;
 
     constructor(
