@@ -40,7 +40,7 @@ interface IFaucet {
 
     /**
      * @dev changes the current time interval between two claims to `duration`,
-     * which is measured in the number of blocks
+     * which is measured in block timestamps
      *
      * This function should only be callable by the contract owner
      */

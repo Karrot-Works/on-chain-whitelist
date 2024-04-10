@@ -65,10 +65,18 @@ contract Faucet is IFaucet, Ownable {
         return isSuccess;
     }
 
+    /**
+     *  @dev allows anyone to deposit to the faucet
+     */
     function fundFaucet() external payable override returns (uint256) {
         return address(this).balance;
     }
 
+    /**
+     * @dev changes the current being funded per address to `amount`.
+     *
+     * This function should only be callable by the contract owner
+     */
     function setAmount(
         uint256 amount
     ) external override onlyOwner returns (bool) {
@@ -76,6 +84,12 @@ contract Faucet is IFaucet, Ownable {
         return true;
     }
 
+    /**
+     * @dev changes the current time interval between two claims to `duration`,
+     * which is measured in block timestamps
+     *
+     * This function should only be callable by the contract owner
+     */
     function setDuration(
         uint256 duration
     ) external override onlyOwner returns (bool) {
