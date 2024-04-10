@@ -58,7 +58,7 @@ contract Faucet is IFaucet, Ownable, FaucetEvents {
         require(isSuccess, "Failed to send Ether");
         lastClaimTimes[to] = block.timestamp;
 
-        emit Claim(to, claimAmount, block.timestamp); // Emitting the Claim event
+        emit Claim(to, claimAmount, block.timestamp); 
 
         return isSuccess;
     }
@@ -69,7 +69,7 @@ contract Faucet is IFaucet, Ownable, FaucetEvents {
      * Emits a {Funded} event.
      */
     function fundFaucet() external payable returns (uint256) {
-        emit Funded(msg.sender, msg.value, block.timestamp); // Emitting the Funded event
+        emit Funded(msg.sender, msg.value, block.timestamp); 
 
         return address(this).balance;
     }
@@ -84,7 +84,7 @@ contract Faucet is IFaucet, Ownable, FaucetEvents {
     function setAmount(uint256 amount) external onlyOwner returns (bool) {
         claimAmount = amount;
 
-        emit AmountChanged(msg.sender, amount, block.timestamp); // Emitting the AmountChanged event
+        emit AmountChanged(msg.sender, amount, block.timestamp);
 
         return true;
     }
@@ -100,7 +100,7 @@ contract Faucet is IFaucet, Ownable, FaucetEvents {
     function setDuration(uint256 duration) external onlyOwner returns (bool) {
         cooldownDuration = duration;
 
-        emit DurationChanged(msg.sender, duration, block.timestamp); // Emitting the DurationChanged event
+        emit DurationChanged(msg.sender, duration, block.timestamp);
 
         return true;
     }
