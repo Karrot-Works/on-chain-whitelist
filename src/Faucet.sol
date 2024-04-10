@@ -44,17 +44,15 @@ contract Faucet is IFaucet, Ownable, FaucetEvents {
      *
      * Returns a boolean value indicating whether the operation succeeded.
      *
-     * Emits a {Transfer} event.
+     * Emits a {Claim} event.
      */
     function claim(address payable to) external returns (bool) {
         require(
             IERC721(WhitelistNFTAddress).balanceOf(to) > 0,
             "WhitelistNFT: Account is not whitelisted"
         );
-        require(
-            block.timestamp >= lastClaimTimes[to] + cooldownDuration,
-            "Faucet: Claim too soon."
-        );
+
+        require((lastClaimTimes[to] == 0) || (block.timestamp >= (lastClaimTimes[to] + cooldownDuration)), "Faucet: Claim too soon.");
 
         (bool isSuccess, ) = to.call{value: claimAmount}("");
         require(isSuccess, "Failed to send Ether");
@@ -67,6 +65,8 @@ contract Faucet is IFaucet, Ownable, FaucetEvents {
 
     /**
      *  @dev allows anyone to deposit to the faucet
+     * 
+     * Emits a {Funded} event.
      */
     function fundFaucet() external payable returns (uint256) {
         emit Funded(msg.sender, msg.value, block.timestamp); // Emitting the Funded event
@@ -78,6 +78,8 @@ contract Faucet is IFaucet, Ownable, FaucetEvents {
      * @dev changes the current being funded per address to `amount`.
      *
      * This function should only be callable by the contract owner
+     * 
+     * Emits a {AmountChanged} event.
      */
     function setAmount(uint256 amount) external onlyOwner returns (bool) {
         claimAmount = amount;
@@ -92,6 +94,8 @@ contract Faucet is IFaucet, Ownable, FaucetEvents {
      * which is measured in block timestamps
      *
      * This function should only be callable by the contract owner
+     * 
+     * Emits a {DurationChanged} event.
      */
     function setDuration(uint256 duration) external onlyOwner returns (bool) {
         cooldownDuration = duration;
