@@ -96,7 +96,7 @@ contract FaucetTest is Test, BaseSetup, FaucetEvents {
     }
 
     // test should revert if user claims twice before cool down
-    function test_ClaimTwiceShouldPass() public {
+    function test_ClaimTwiceBeforeCoolDownShouldRevert() public {
         // mint whitelist nft to user1
         earlyAccessNFTContract.mintTo(user1);
 
