@@ -25,16 +25,14 @@ contract Faucet is IFaucet, Ownable {
     /**
      * @dev Returns the current balance of the faucet.
      */
-    function balance() external view override returns (uint256) {
+    function balance() external view returns (uint256) {
         return address(this).balance;
     }
 
     /**
      * @dev Returns the block time at which eth was claimed by `account`.
      */
-    function lastClaimed(
-        address account
-    ) external view override returns (uint256) {
+    function lastClaimed(address account) external view returns (uint256) {
         return lastClaimTimes[account];
     }
 
@@ -67,7 +65,7 @@ contract Faucet is IFaucet, Ownable {
     /**
      *  @dev allows anyone to deposit to the faucet
      */
-    function fundFaucet() external payable override returns (uint256) {
+    function fundFaucet() external payable returns (uint256) {
         return address(this).balance;
     }
 
@@ -76,9 +74,7 @@ contract Faucet is IFaucet, Ownable {
      *
      * This function should only be callable by the contract owner
      */
-    function setAmount(
-        uint256 amount
-    ) external override onlyOwner returns (bool) {
+    function setAmount(uint256 amount) external onlyOwner returns (bool) {
         claimAmount = amount;
         return true;
     }
@@ -89,9 +85,7 @@ contract Faucet is IFaucet, Ownable {
      *
      * This function should only be callable by the contract owner
      */
-    function setDuration(
-        uint256 duration
-    ) external override onlyOwner returns (bool) {
+    function setDuration(uint256 duration) external onlyOwner returns (bool) {
         cooldownDuration = duration;
         return true;
     }
