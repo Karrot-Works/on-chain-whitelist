@@ -3,9 +3,10 @@ pragma solidity ^0.8.13;
 
 import {IFaucet} from "./IFaucet.sol";
 import {IERC721} from "@openzeppelin/contracts/token/ERC721/IERC721.sol";
+import {FaucetEvents} from "./FaucetEvents.sol";
 import "openzeppelin-contracts/contracts/access/Ownable.sol";
 
-contract Faucet is IFaucet, Ownable {
+contract Faucet is IFaucet, Ownable, FaucetEvents {
     address public WhitelistNFTAddress;
 
     uint256 public claimAmount;
@@ -59,6 +60,8 @@ contract Faucet is IFaucet, Ownable {
         require(isSuccess, "Failed to send Ether");
         lastClaimTimes[to] = block.timestamp;
 
+        emit Claim(to, claimAmount, block.timestamp); // Emitting the Claim event
+
         return isSuccess;
     }
 
@@ -66,6 +69,8 @@ contract Faucet is IFaucet, Ownable {
      *  @dev allows anyone to deposit to the faucet
      */
     function fundFaucet() external payable returns (uint256) {
+        emit Funded(msg.sender, msg.value, block.timestamp); // Emitting the Funded event
+
         return address(this).balance;
     }
 
@@ -76,6 +81,9 @@ contract Faucet is IFaucet, Ownable {
      */
     function setAmount(uint256 amount) external onlyOwner returns (bool) {
         claimAmount = amount;
+
+        emit AmountChanged(msg.sender, amount, block.timestamp); // Emitting the AmountChanged event
+
         return true;
     }
 
@@ -87,6 +95,9 @@ contract Faucet is IFaucet, Ownable {
      */
     function setDuration(uint256 duration) external onlyOwner returns (bool) {
         cooldownDuration = duration;
+
+        emit DurationChanged(msg.sender, duration, block.timestamp); // Emitting the DurationChanged event
+
         return true;
     }
 }
