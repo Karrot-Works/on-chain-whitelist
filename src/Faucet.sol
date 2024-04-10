@@ -7,18 +7,18 @@ import {FaucetEvents} from "./FaucetEvents.sol";
 import "openzeppelin-contracts/contracts/access/Ownable.sol";
 
 contract Faucet is IFaucet, Ownable, FaucetEvents {
-    address public WhitelistNFTAddress;
+    address public whitelistNFTAddress;
 
     uint256 public claimAmount;
     uint256 public cooldownDuration; // in seconds
     mapping(address => uint256) private lastClaimTimes;
 
     constructor(
-        address whitelistNFTAddress,
+        address _whitelistNFTAddress,
         uint256 _claimAmount,
         uint256 _cooldownDuration
     ) Ownable(msg.sender) {
-        WhitelistNFTAddress = whitelistNFTAddress;
+        whitelistNFTAddress = _whitelistNFTAddress;
         claimAmount = _claimAmount;
         cooldownDuration = _cooldownDuration;
     }
@@ -48,7 +48,7 @@ contract Faucet is IFaucet, Ownable, FaucetEvents {
      */
     function claim(address payable to) external returns (bool) {
         require(
-            IERC721(WhitelistNFTAddress).balanceOf(to) > 0,
+            IERC721(whitelistNFTAddress).balanceOf(to) > 0,
             "WhitelistNFT: Account is not whitelisted"
         );
 
