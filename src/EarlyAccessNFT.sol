@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: UNLICENSED
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.13;
 
 import "openzeppelin-contracts/contracts/token/ERC721/ERC721.sol";
@@ -6,7 +6,7 @@ import "openzeppelin-contracts/contracts/token/ERC721/extensions/ERC721Burnable.
 import "openzeppelin-contracts/contracts/utils/Strings.sol";
 import "openzeppelin-contracts/contracts/access/Ownable.sol";
 
-contract WhitelistNFT is ERC721, Ownable, ERC721Burnable {
+contract EarlyAccessNFT is ERC721, Ownable, ERC721Burnable {
     uint256 public currentTokenId;
 
     constructor(
