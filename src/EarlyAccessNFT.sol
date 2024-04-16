@@ -16,7 +16,7 @@ contract EarlyAccessNFT is ERC721, Ownable, ERC721Burnable {
 
     function mintTo(
         address recipient
-    ) public payable onlyOwner returns (uint256) {
+    ) public onlyOwner returns (uint256) {
         // check if recipient is not zero address
         require(recipient != address(0), "ZERO_ADDRESS");
 
