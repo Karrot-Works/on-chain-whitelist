@@ -58,18 +58,18 @@ contract Faucet is IFaucet, Ownable, FaucetEvents {
         require(isSuccess, "Failed to send Ether");
         lastClaimTimes[to] = block.timestamp;
 
-        emit Claim(to, claimAmount, block.timestamp); 
+        emit Claim(to, claimAmount, block.timestamp);
 
         return isSuccess;
     }
 
     /**
      *  @dev allows anyone to deposit to the faucet
-     * 
+     *
      * Emits a {Funded} event.
      */
     function fundFaucet() external payable returns (uint256) {
-        emit Funded(msg.sender, msg.value, block.timestamp); 
+        emit Funded(msg.sender, msg.value, block.timestamp);
 
         return address(this).balance;
     }
@@ -78,7 +78,7 @@ contract Faucet is IFaucet, Ownable, FaucetEvents {
      * @dev changes the current being funded per address to `amount`.
      *
      * This function should only be callable by the contract owner
-     * 
+     *
      * Emits a {AmountChanged} event.
      */
     function setAmount(uint256 amount) external onlyOwner returns (bool) {
@@ -94,7 +94,7 @@ contract Faucet is IFaucet, Ownable, FaucetEvents {
      * which is measured in block timestamps
      *
      * This function should only be callable by the contract owner
-     * 
+     *
      * Emits a {DurationChanged} event.
      */
     function setDuration(uint256 duration) external onlyOwner returns (bool) {
@@ -104,4 +104,17 @@ contract Faucet is IFaucet, Ownable, FaucetEvents {
 
         return true;
     }
+
+
+    /**
+     * @dev changes the nft collection address that is checked for whitelist access
+     *
+     * This function should only be callable by the contract owner
+     */
+     function setNFTAddress(address newAddress) external onlyOwner returns (bool) {
+        whitelistNFTAddress = newAddress;
+
+        emit NFTChanged(msg.sender, newAddress, block.timestamp);
+        return true;
+     }
 }

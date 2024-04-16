@@ -36,7 +36,7 @@ contract FaucetTest is Test, BaseSetup, FaucetEvents {
         assertEq(balanceBefore, 0);
 
         bool isSuccess = faucetContract.claim(payable(user1));
-        assertEq(isSuccess, true);
+        assertTrue(isSuccess);
 
         uint256 balanceAfter = address(user1).balance;
         assertEq(balanceAfter, balanceBefore + claimAmount);
@@ -61,7 +61,9 @@ contract FaucetTest is Test, BaseSetup, FaucetEvents {
 
     // test should pass when claim amount is set by owner
     function test_SetAmountShouldPass() public {
-        faucetContract.setAmount(2);
+        bool isSuccess = faucetContract.setAmount(2);
+        assertTrue(isSuccess);
+
         uint256 amount = faucetContract.claimAmount();
         assertEq(amount, 2);
     }
@@ -76,7 +78,9 @@ contract FaucetTest is Test, BaseSetup, FaucetEvents {
 
     // test should pass when cool down duration is set by owner
     function test_SetCoolDownDurationShouldPass() public {
-        faucetContract.setDuration(2);
+        bool isSuccess = faucetContract.setDuration(2);
+        assertTrue(isSuccess);
+
         uint256 coolDownDuration = faucetContract.cooldownDuration();
         assertEq(coolDownDuration, 2);
     }
@@ -86,6 +90,23 @@ contract FaucetTest is Test, BaseSetup, FaucetEvents {
         vm.startPrank(user1);
         vm.expectRevert();
         faucetContract.setDuration(2);
+        vm.stopPrank();
+    }
+
+    // test should pass when new nft address is set by owner
+    function test_SetNFTAddressShouldPass() public {
+        bool isSuccess = faucetContract.setNFTAddress(address(0));
+        assertTrue(isSuccess);
+
+        address whitelistNFTAddress = faucetContract.whitelistNFTAddress();
+        assertEq(whitelistNFTAddress, address(0));
+    }
+
+    // test should revert if nft address is set by non owner
+    function test_ExpectRevertSetNFTAddress() public {
+        vm.startPrank(user1);
+        vm.expectRevert();
+        faucetContract.setNFTAddress(address(0));
         vm.stopPrank();
     }
 
@@ -154,5 +175,12 @@ contract FaucetTest is Test, BaseSetup, FaucetEvents {
         vm.expectEmit(true, true, true, false);
         emit DurationChanged(address(this), 2, block.timestamp);
         faucetContract.setDuration(2);
+    }
+
+    // test nft changed event
+    function test_NFTAddressChangedEvent() public {
+        vm.expectEmit(true, true, true, false);
+        emit NFTChanged(address(this), address(0), block.timestamp);
+        faucetContract.setNFTAddress(address(0));
     }
 }
