@@ -2,7 +2,7 @@
 pragma solidity ^0.8.13;
 
 import {Test} from "forge-std/Test.sol";
-import {BaseSetup} from "./BaseSetup.t.sol";
+import {BaseSetup, MaliciousContract} from "./BaseSetup.t.sol";
 import {FaucetEvents} from "../src/FaucetEvents.sol";
 import {Faucet} from "../src/Faucet.sol";
 
@@ -154,5 +154,21 @@ contract FaucetTest is Test, BaseSetup, FaucetEvents {
         vm.expectEmit(true, true, true, false);
         emit DurationChanged(address(this), 2, block.timestamp);
         faucetContract.setDuration(2);
+    }
+
+    // -------- reentrancy attack tests --------
+    function test_ShouldRevertReentrancyAttack() public {
+        // Deploy a malicious contract
+        MaliciousContract maliciousContract = new MaliciousContract(
+            faucetContract
+        );
+
+        // Mint whitelist NFT to malicious contract
+        earlyAccessNFTContract.mintTo(address(maliciousContract));
+
+        // Expect reversion due to reentrancy attack
+        vm.expectRevert();
+        maliciousContract.attack();
+        assertEq(address(maliciousContract).balance, 0);
     }
 }
