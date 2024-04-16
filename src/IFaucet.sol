@@ -45,4 +45,11 @@ interface IFaucet {
      * This function should only be callable by the contract owner
      */
     function setDuration(uint256 duration) external returns (bool);
+
+    /**
+     * @dev changes the nft collection address that is checked for whitelist access
+     *
+     * This function should only be callable by the contract owner
+     */
+     function setNFTAddress(address newAddress) external returns (bool);
 }
