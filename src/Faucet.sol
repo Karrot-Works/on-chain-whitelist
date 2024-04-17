@@ -3,10 +3,11 @@ pragma solidity ^0.8.13;
 
 import {IFaucet} from "./IFaucet.sol";
 import {IERC721} from "@openzeppelin/contracts/token/ERC721/IERC721.sol";
+import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import {FaucetEvents} from "./FaucetEvents.sol";
 import "openzeppelin-contracts/contracts/access/Ownable.sol";
 
-contract Faucet is IFaucet, Ownable, FaucetEvents {
+contract Faucet is IFaucet, Ownable, FaucetEvents, ReentrancyGuard {
     address public whitelistNFTAddress;
 
     uint256 public claimAmount;
@@ -46,7 +47,7 @@ contract Faucet is IFaucet, Ownable, FaucetEvents {
      *
      * Emits a {Claim} event.
      */
-    function claim(address payable to) external returns (bool) {
+    function claim(address payable to) external nonReentrant returns (bool) {
         require(
             IERC721(whitelistNFTAddress).balanceOf(to) > 0,
             "WhitelistNFT: Account is not whitelisted"
@@ -54,9 +55,11 @@ contract Faucet is IFaucet, Ownable, FaucetEvents {
 
         require((lastClaimTimes[to] == 0) || (block.timestamp >= (lastClaimTimes[to] + cooldownDuration)), "Faucet: Claim too soon.");
 
+        // Update the last claim time first to guard against reentrancy
+        lastClaimTimes[to] = block.timestamp;
+        
         (bool isSuccess, ) = to.call{value: claimAmount}("");
         require(isSuccess, "Failed to send Ether");
-        lastClaimTimes[to] = block.timestamp;
 
         emit Claim(to, claimAmount, block.timestamp);
 
