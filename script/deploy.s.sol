@@ -42,5 +42,10 @@ contract DeployScript is Script {
         console.logAddress(address(faucet));
 
         vm.stopBroadcast();
+
+        vm.writeJson('{"earlyAccessNFT": "", "faucet": ""}', "./data/deployments.json");
+        vm.writeJson(vm.toString((address(nft))), "./data/deployments.json", ".earlyAccessNFT");
+        vm.writeJson(vm.toString((address(faucet))), "./data/deployments.json", ".faucet");
+
     }
 }

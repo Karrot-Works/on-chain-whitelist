@@ -10,3 +10,7 @@ docs/
 
 # Dotenv file
 .env
+
+# data dir
+data/*
+!data/.gitkeep
