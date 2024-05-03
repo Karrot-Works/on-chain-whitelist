@@ -31,8 +31,8 @@ contract DeployScript is Script {
         console.logString("EarlyAccess NFT Address:");
         console.logAddress(address(nft));
 
-        // in wei
-        uint256 claimAmount = 10000000000000000;
+        // in wei, 0.001 Eth
+        uint256 claimAmount = 1000000000000000;
         // in seconds
         uint256 cooldownDuration = 20;
 

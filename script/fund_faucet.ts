@@ -17,13 +17,15 @@ const main = async () => {
     process.exit(1);
   }
 
-//   const RPC_URL = process.env.SEPOLIA_RPC_URL;
-  const RPC_URL = "http://127.0.0.1:8545";
+  const RPC_URL = process.env.SEPOLIA_RPC_URL;
   const PRIVATE_KEY = process.env.PRIVATE_KEY;
 
   const rpcProvider = new JsonRpcProvider(RPC_URL);
 
   const sender = new Wallet(PRIVATE_KEY, rpcProvider);
+
+
+  console.log('faucet Address: ', deployments.faucet);
 
   const faucetContract = new Contract(
     deployments.faucet,
@@ -31,7 +33,7 @@ const main = async () => {
     sender,
   );
 
-  console.log("Funding faucet with 0.1 Eth ...");
+  console.log("Funding faucet with 0.015 Eth ...");
   console.log("balance before: ", await faucetContract.balance());
 
   const fundingResponse = await faucetContract.fundFaucet({
