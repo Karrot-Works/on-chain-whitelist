@@ -66,9 +66,7 @@ const main = async () => {
   const gasEstimate = await faucetContract.claim.estimateGas(receiver.address);
   console.log('gas estimation is', gasEstimate);
 
-  const faucetResponse = await faucetContract.claim(receiver.address, {
-    gasLimit: 100000
-  });
+  const faucetResponse = await faucetContract.claim(receiver.address);
   await faucetResponse.wait();
   console.log("faucet use successful ✅, txn hash:", faucetResponse.hash);
 
