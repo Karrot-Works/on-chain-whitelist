@@ -2,15 +2,12 @@
 pragma solidity ^0.8.13;
 
 import {Script, console} from "forge-std/Script.sol";
+import {Upgrades} from "openzeppelin-foundry-upgrades/Upgrades.sol";
 import "forge-std/console.sol";
 import "../src/EarlyAccessNFT.sol";
-import "../src/Faucet.sol";
 
 contract DeployScript is Script {
-
-    function setUp() public {
-
-    }
+    function setUp() public {}
 
     /**
     @dev The script does the following:
@@ -36,16 +33,38 @@ contract DeployScript is Script {
         // in seconds
         uint256 cooldownDuration = 20;
 
-        Faucet faucet = new Faucet(address(nft), claimAmount, cooldownDuration);
+        address proxyAddress = Upgrades.deployUUPSProxy(
+            "Faucet.sol",
+            abi.encodeWithSignature(
+                "initialize(address,uint256,uint256)",
+                address(nft),
+                claimAmount,
+                cooldownDuration
+            )
+        );
+        address implementationAddress = Upgrades.getImplementationAddress(
+            proxyAddress
+        );
 
-        console.logString("Faucet Address:");
-        console.logAddress(address(faucet));
+        console.logString("Proxy Address:");
+        console.logAddress(proxyAddress);
+
+        console.logString("Implementation Address:");
+        console.logAddress(implementationAddress);
 
         vm.stopBroadcast();
 
-        vm.writeJson('{"earlyAccessNFT": "", "faucet": ""}', "./data/deployments.json");
-        vm.writeJson(vm.toString((address(nft))), "./data/deployments.json", ".earlyAccessNFT");
-        vm.writeJson(vm.toString((address(faucet))), "./data/deployments.json", ".faucet");
-
+        vm.writeJson('{"earlyAccessNFT": "", "FaucetProxy": "", "FaucetImplementation":""}', "./data/deployments.json");
+        vm.writeJson(
+            vm.toString((address(nft))),
+            "./data/deployments.json",
+            ".earlyAccessNFT"
+        );
+        vm.writeJson(vm.toString(proxyAddress), "./data/deployments.json", ".FaucetProxy");
+        vm.writeJson(
+            vm.toString(implementationAddress),
+            "./data/deployments.json",
+            ".FaucetImplementation"
+        );
     }
 }
