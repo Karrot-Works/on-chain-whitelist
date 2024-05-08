@@ -3,26 +3,48 @@ pragma solidity ^0.8.13;
 
 import {IFaucet} from "./IFaucet.sol";
 import {IERC721} from "@openzeppelin/contracts/token/ERC721/IERC721.sol";
-import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import {ReentrancyGuardUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol";
 import {FaucetEvents} from "./FaucetEvents.sol";
 import "openzeppelin-contracts/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/utils/PausableUpgradeable.sol";
 
-contract Faucet is IFaucet, Ownable, FaucetEvents, ReentrancyGuard {
+contract UpgradeableFaucet is
+    IFaucet,
+    FaucetEvents,
+    ReentrancyGuardUpgradeable,
+    UUPSUpgradeable,
+    OwnableUpgradeable,
+    PausableUpgradeable
+{
     address public whitelistNFTAddress;
 
     uint256 public claimAmount;
     uint256 public cooldownDuration; // in seconds
     mapping(address => uint256) private lastClaimTimes;
 
-    constructor(
+    function initialize(
         address _whitelistNFTAddress,
         uint256 _claimAmount,
         uint256 _cooldownDuration
-    ) Ownable(msg.sender) {
+    ) external initializer {
+        __Ownable_init(msg.sender);
+        __Pausable_init();
+
         whitelistNFTAddress = _whitelistNFTAddress;
         claimAmount = _claimAmount;
         cooldownDuration = _cooldownDuration;
     }
+
+    /**
+     * @notice Override of UUPSUpgradeable virtual function
+     *
+     * @dev Function that should revert when `msg.sender` is not authorized to upgrade the contract. Called by
+     * {upgradeTo} and {upgradeToAndCall}.
+     */
+    function _authorizeUpgrade(address) internal view override onlyOwner {}
 
     /**
      * @dev Returns the current balance of the faucet.
@@ -53,11 +75,15 @@ contract Faucet is IFaucet, Ownable, FaucetEvents, ReentrancyGuard {
             "WhitelistNFT: Account is not whitelisted"
         );
 
-        require((lastClaimTimes[to] == 0) || (block.timestamp >= (lastClaimTimes[to] + cooldownDuration)), "Faucet: Claim too soon.");
+        require(
+            (lastClaimTimes[to] == 0) ||
+                (block.timestamp >= (lastClaimTimes[to] + cooldownDuration)),
+            "Faucet: Claim too soon."
+        );
 
         // Update the last claim time first to guard against reentrancy
         lastClaimTimes[to] = block.timestamp;
-        
+
         (bool isSuccess, ) = to.call{value: claimAmount}("");
         require(isSuccess, "Failed to send Ether");
 
@@ -108,16 +134,17 @@ contract Faucet is IFaucet, Ownable, FaucetEvents, ReentrancyGuard {
         return true;
     }
 
-
     /**
      * @dev changes the nft collection address that is checked for whitelist access
      *
      * This function should only be callable by the contract owner
      */
-     function setNFTAddress(address newAddress) external onlyOwner returns (bool) {
+    function setNFTAddress(
+        address newAddress
+    ) external onlyOwner returns (bool) {
         whitelistNFTAddress = newAddress;
 
         emit NFTChanged(msg.sender, newAddress, block.timestamp);
         return true;
-     }
+    }
 }
