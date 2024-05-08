@@ -34,7 +34,7 @@ const main = async () => {
     sender,
   );
   const faucetContract = new Contract(
-    deployments.FaucetProxy,
+    deployments.faucetProxyAddress,
     FaucetArtifact.abi,
     sender,
   );

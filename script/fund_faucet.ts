@@ -25,10 +25,10 @@ const main = async () => {
   const sender = new Wallet(PRIVATE_KEY, rpcProvider);
 
 
-  console.log('faucet proxy Address: ', deployments.FaucetProxy);
+  console.log('faucet proxy Address: ', deployments.faucetProxyAddress);
 
   const faucetContract = new Contract(
-    deployments.FaucetProxy,
+    deployments.faucetProxyAddress,
     FaucetArtifact.abi,
     sender,
   );

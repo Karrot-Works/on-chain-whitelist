@@ -54,17 +54,17 @@ contract DeployScript is Script {
 
         vm.stopBroadcast();
 
-        vm.writeJson('{"earlyAccessNFT": "", "FaucetProxy": "", "FaucetImplementation":""}', "./data/deployments.json");
+        vm.writeJson('{"earlyAccessNFT": "", "faucetProxyAddress": "", "faucetImplementationAddress":""}', "./data/deployments.json");
         vm.writeJson(
             vm.toString((address(nft))),
             "./data/deployments.json",
             ".earlyAccessNFT"
         );
-        vm.writeJson(vm.toString(proxyAddress), "./data/deployments.json", ".FaucetProxy");
+        vm.writeJson(vm.toString(proxyAddress), "./data/deployments.json", ".faucetProxyAddress");
         vm.writeJson(
             vm.toString(implementationAddress),
             "./data/deployments.json",
-            ".FaucetImplementation"
+            ".faucetImplementationAddress"
         );
     }
 }
