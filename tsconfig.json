@@ -1,11 +1,10 @@
 {
   "compilerOptions": {
-    "lib": ["ESNext"],
-    "module": "esnext",
-    "target": "esnext",
-    "moduleResolution": "bundler",
-    "moduleDetection": "force",
-    "allowImportingTsExtensions": true,
+    "lib": ["ES2022"],
+    "module": "CommonJS",
+    "target": "ES2022",
+    "esModuleInterop": true,
+    "moduleResolution": "Node",
     "noEmit": true,
     "composite": true,
     "strict": true,
@@ -15,8 +14,8 @@
     "allowSyntheticDefaultImports": true,
     "forceConsistentCasingInFileNames": true,
     "allowJs": true,
-    "types": [
-      "bun-types" // add Bun global
-    ]
-  }
+    "resolveJsonModule": true,
+    "types": ["bun-types"] // add Bun global
+  },
+  "include": ["script/**/*.ts", "hardhat.config.ts"]
 }

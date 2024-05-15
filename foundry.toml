@@ -2,9 +2,12 @@
 src = "src"
 out = "out"
 libs = ["lib"]
-fs_permissions = [{ access = "read-write", path = "./data"}]
-
-# See more config options https://github.com/foundry-rs/foundry/blob/master/crates/config/README.md#all-options
+ffi = true
+ast = true
+build_info = true
+fs_permissions = [{ access = "read-write", path = "./data" }, { access = "read", path = "out" }]
+evm_version = "cancun"
+extra_output = ["storageLayout"]
 
 [rpc_endpoints]
 sepolia = "${SEPOLIA_RPC_URL}"

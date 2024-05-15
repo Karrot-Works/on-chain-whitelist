@@ -29,7 +29,7 @@ contract MaliciousContract is ERC721Holder {
 
     // Function to perform reentrancy attack
     function attack() external {
-        // Call the claim function of the Faucet contract
+        // Call the claim function of the UpgradeableFaucet contract
         faucet.claim(payable(address(this)));
     }
 

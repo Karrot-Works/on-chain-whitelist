@@ -1,17 +1,21 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.13;
 
-import {IFaucet} from "./IFaucet.sol";
+import {IFaucet} from "../src/IFaucet.sol";
 import {IERC721} from "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import {ReentrancyGuardUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol";
-import {FaucetEvents} from "./FaucetEvents.sol";
+import {FaucetEvents} from "../src/FaucetEvents.sol";
 import "openzeppelin-contracts/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/PausableUpgradeable.sol";
 
-contract Faucet is
+/// @custom:oz-upgrades-from Faucet
+
+// This contract is just for testing contract upgrade functionality and not meant to be deployed 
+
+contract FaucetV2 is
     IFaucet,
     FaucetEvents,
     ReentrancyGuardUpgradeable,
@@ -24,6 +28,9 @@ contract Faucet is
     uint256 public claimAmount;
     uint256 public cooldownDuration; // in seconds
     mapping(address => uint256) private lastClaimTimes;
+
+    // add new variable for upgrade test
+    uint256 public newVariable;
 
     function initialize(
         address _whitelistNFTAddress,
@@ -145,6 +152,17 @@ contract Faucet is
         whitelistNFTAddress = newAddress;
 
         emit NFTChanged(msg.sender, newAddress, block.timestamp);
+        return true;
+    }
+
+    /**
+     * @dev changes the new variable. Used for testing upgrade functionality
+     *
+     * This function should only be callable by the contract owner
+     */
+    function setNewVariable(uint256 _newVariable) external onlyOwner returns (bool) {
+        newVariable = _newVariable;
+
         return true;
     }
 }
