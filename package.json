@@ -1,9 +1,12 @@
 {
   "name": "on-chain-whitelist",
-  "module": "index.ts",
-  "type": "module",
   "devDependencies": {
-    "bun-types": "latest"
+    "@nomicfoundation/hardhat-foundry": "^1.1.1",
+    "@openzeppelin/hardhat-upgrades": "^3.1.0",
+    "@types/node": "^20.12.12",
+    "bun-types": "latest",
+    "hardhat": "^2.22.4",
+    "ts-node": "^10.9.2"
   },
   "peerDependencies": {
     "typescript": "^5.0.0"

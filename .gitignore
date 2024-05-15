@@ -3,6 +3,8 @@ node_modules
 # Compiler files
 cache/
 out/
+artifacts/
+cache_hardhat
 
 # Ignores development broadcast logs
 broadcast
@@ -14,5 +16,4 @@ docs/
 .env
 
 # data dir
-data/*
 !data/.gitkeep
