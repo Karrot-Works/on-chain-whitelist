@@ -20,6 +20,10 @@ const config: HardhatUserConfig = {
       url: "https://sepolia-rpc.kakarot.org",
       accounts: [privateKey!]
     },
+    "anvil": {
+      url: "http://127.0.0.1:8545",
+      accounts: [privateKey!]
+    }
   }
 };
 
