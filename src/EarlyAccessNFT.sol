@@ -3,10 +3,11 @@ pragma solidity ^0.8.13;
 
 import "openzeppelin-contracts/contracts/token/ERC721/ERC721.sol";
 import "openzeppelin-contracts/contracts/token/ERC721/extensions/ERC721Burnable.sol";
+import "openzeppelin-contracts/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import "openzeppelin-contracts/contracts/utils/Strings.sol";
 import "openzeppelin-contracts/contracts/access/Ownable.sol";
 
-contract EarlyAccessNFT is ERC721, Ownable, ERC721Burnable {
+contract EarlyAccessNFT is ERC721, Ownable, ERC721Burnable, ERC721Enumerable {
     uint256 public currentTokenId;
 
     constructor(
@@ -34,10 +35,7 @@ contract EarlyAccessNFT is ERC721, Ownable, ERC721Burnable {
         return Strings.toString(id);
     }
 
-    function balanceOf(address owner) public view override returns (uint256) {
-        require(owner != address(0), "ZERO_ADDRESS");
-        return super.balanceOf(owner);
-    }
+    // The following functions are overrides required by Solidity for the ERC721 and ERC721Enumerable contracts
 
     /**
      * @dev Called internally by _mint, _burn, _transfer and _transferFrom functions
@@ -47,7 +45,7 @@ contract EarlyAccessNFT is ERC721, Ownable, ERC721Burnable {
         address to,
         uint256 tokenId,
         address auth
-    ) internal override returns (address) {
+    ) internal override (ERC721, ERC721Enumerable) returns (address) {
         address owner = _ownerOf(tokenId);
 
         // if to and owner are non zero addresses, then it is a transfer
@@ -59,4 +57,22 @@ contract EarlyAccessNFT is ERC721, Ownable, ERC721Burnable {
 
         return super._update(to, tokenId, auth);
     }
+
+    function _increaseBalance(address account, uint128 value)
+        internal
+        override(ERC721, ERC721Enumerable)
+    {
+        super._increaseBalance(account, value);
+    }
+
+    function supportsInterface(bytes4 interfaceId)
+        public
+        view
+        override(ERC721, ERC721Enumerable)
+        returns (bool)
+    {
+        return super.supportsInterface(interfaceId);
+    }
+
+
 }
