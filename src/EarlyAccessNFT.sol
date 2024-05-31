@@ -9,6 +9,7 @@ import "openzeppelin-contracts/contracts/access/Ownable.sol";
 
 contract EarlyAccessNFT is ERC721, Ownable, ERC721Burnable, ERC721Enumerable {
     uint256 public currentTokenId;
+    string public baseURI;
 
     constructor(
         string memory _name,
@@ -29,10 +30,19 @@ contract EarlyAccessNFT is ERC721, Ownable, ERC721Burnable, ERC721Enumerable {
         return newItemId;
     }
 
-    function tokenURI(
-        uint256 id
-    ) public view virtual override returns (string memory) {
-        return Strings.toString(id);
+    /**
+     * @dev override _baseURI to set the base URI
+     * returns the baseURI
+     */
+    function _baseURI() internal view override returns (string memory) {
+        return baseURI;
+    }
+
+    /**
+     * @dev set the base URI
+     */
+    function setBaseURI(string memory _baseURI_) public onlyOwner {
+        baseURI = _baseURI_;
     }
 
     // The following functions are overrides required by Solidity for the ERC721 and ERC721Enumerable contracts
