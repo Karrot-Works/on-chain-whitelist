@@ -147,4 +147,10 @@ contract Faucet is
         emit NFTChanged(msg.sender, newAddress, block.timestamp);
         return true;
     }
+
+    /**
+     * @dev receive function to receive ether
+     */
+
+    receive() external payable {}
 }
