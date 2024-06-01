@@ -19,10 +19,20 @@ contract EarlyAccessNFTTest is Test, BaseSetup {
         assertEq(balance, 1);
         assertEq(tokenId, 1);
         assertEq(earlyAccessNFTContract.ownerOf(tokenId), user1);
+    }
 
-        // token uri
+    function test_setBaseTokenURIShouldPass() public{
+        string memory baseURI = "https://api.earlyaccessnft.com/";
+        earlyAccessNFTContract.setBaseURI(baseURI);
+        assertEq(earlyAccessNFTContract.baseURI(), baseURI);
+    }
+
+    function test_getTokenURIShouldPass() public{
+        string memory baseURI = "https://api.earlyaccessnft.com/";
+        earlyAccessNFTContract.setBaseURI(baseURI);
+        uint256 tokenId = earlyAccessNFTContract.mintTo(user1);
         string memory tokenURI = earlyAccessNFTContract.tokenURI(tokenId);
-        assertEq(tokenURI, "1");
+        assertEq(tokenURI, "https://api.earlyaccessnft.com/1");
     }
 
     // test should revert if minting to a zero address
