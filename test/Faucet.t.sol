@@ -11,13 +11,13 @@ import "./FaucetV2.sol";
 contract FaucetTest is Test, BaseSetup, FaucetEvents {
     Faucet faucet;
     address implementationAddress;
-    address proxyAddress;
+    address payable proxyAddress;
 
     uint256 claimAmount;
 
     function setUp() public override {
         BaseSetup.setUp();
-        address _proxyAddress = Upgrades.deployUUPSProxy(
+        address payable _proxyAddress = payable(Upgrades.deployUUPSProxy(
             "Faucet.sol",
             abi.encodeWithSignature(
                 "initialize(address,uint256,uint256)",
@@ -25,7 +25,7 @@ contract FaucetTest is Test, BaseSetup, FaucetEvents {
                 0.1 ether,
                 60
             )
-        );
+        ));
         implementationAddress = Upgrades.getImplementationAddress(
             _proxyAddress
         );
