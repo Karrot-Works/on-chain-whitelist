@@ -24,6 +24,7 @@ contract Faucet is
     uint256 public claimAmount;
     uint256 public cooldownDuration; // in seconds
     mapping(address => uint256) private lastClaimTimes;
+    mapping(address => bool) private permissionedAddresses;
 
     function initialize(
         address _whitelistNFTAddress,
@@ -45,6 +46,17 @@ contract Faucet is
      * {upgradeTo} and {upgradeToAndCall}.
      */
     function _authorizeUpgrade(address) internal view override onlyOwner {}
+
+    /**
+     * @dev Modifier to make a function callable only by permissioned addresses.
+     */
+    modifier onlyPermissioned() {
+        require(
+            permissionedAddresses[msg.sender],
+            "Faucet: Caller is not permissioned"
+        );
+        _;
+    }
 
     /**
      * @dev Returns the current balance of the faucet.
@@ -69,12 +81,9 @@ contract Faucet is
      *
      * Emits a {Claim} event.
      */
-    function claim(address payable to) external nonReentrant returns (bool) {
-        require(
-            IERC721(whitelistNFTAddress).balanceOf(to) > 0,
-            "WhitelistNFT: Account is not whitelisted"
-        );
-
+    function claim(
+        address payable to
+    ) external nonReentrant onlyPermissioned returns (bool) {
         require(
             (lastClaimTimes[to] == 0) ||
                 (block.timestamp >= (lastClaimTimes[to] + cooldownDuration)),
@@ -101,6 +110,20 @@ contract Faucet is
         emit Funded(msg.sender, msg.value, block.timestamp);
 
         return address(this).balance;
+    }
+
+    /**
+     * @dev Allows the owner to add an address to the list of permissioned addresses.
+     */
+    function addPermissionedAddress(address _address) external onlyOwner {
+        permissionedAddresses[_address] = true;
+    }
+
+    /**
+     * @dev Allows the owner to remove an address from the list of permissioned addresses.
+     */
+    function removePermissionedAddress(address _address) external onlyOwner {
+        permissionedAddresses[_address] = false;
     }
 
     /**
@@ -146,6 +169,15 @@ contract Faucet is
 
         emit NFTChanged(msg.sender, newAddress, block.timestamp);
         return true;
+    }
+
+    /**
+     * @dev Allows the owner to withdraw all funds from the faucet.
+     */
+    function withdraw(uint256 amount) external onlyOwner {
+        require(amount <= address(this).balance, "Faucet: Insufficient balance");
+        (bool success, ) = msg.sender.call{value: amount}("");
+        require(success, "Faucet: Failed to send Ether");
     }
 
     /**
