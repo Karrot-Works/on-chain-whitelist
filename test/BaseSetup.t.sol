@@ -30,18 +30,18 @@ contract MaliciousContract is ERC721Holder {
     // Function to perform reentrancy attack
     function attack() external {
         // Call the claim function of the UpgradeableFaucet contract
-        faucet.claim(payable(address(this)));
+        faucet.claim(payable(address(this)), false);
     }
 
     // Function to receive Ether
     receive() external payable {
         // Perform reentrancy attack by calling the claim function again
-        faucet.claim(payable(address(this)));
+        faucet.claim(payable(address(this)), false);
     }
 
     // Fallback function is called when msg.data is not empty
     fallback() external payable {
         // Perform reentrancy attack by calling the claim function again
-        faucet.claim(payable(address(this)));
+        faucet.claim(payable(address(this)), false);
     }
 }
