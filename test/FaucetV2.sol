@@ -28,8 +28,10 @@ contract FaucetV2 is
     uint256 public claimAmount;
     uint256 public cooldownDuration; // in seconds
     mapping(address => uint256) private lastClaimTimes;
+    mapping(address => bool) private permissionedAddresses;
 
-    // add new variable for upgrade test
+    uint256 public discordClaimAmount;
+
     uint256 public newVariable;
 
     function initialize(
@@ -54,6 +56,17 @@ contract FaucetV2 is
     function _authorizeUpgrade(address) internal view override onlyOwner {}
 
     /**
+     * @dev Modifier to make a function callable only by permissioned addresses.
+     */
+    modifier onlyPermissioned() {
+        require(
+            permissionedAddresses[msg.sender],
+            "Faucet: Caller is not permissioned"
+        );
+        _;
+    }
+
+    /**
      * @dev Returns the current balance of the faucet.
      */
     function balance() external view returns (uint256) {
@@ -76,12 +89,10 @@ contract FaucetV2 is
      *
      * Emits a {Claim} event.
      */
-    function claim(address payable to) external nonReentrant returns (bool) {
-        require(
-            IERC721(whitelistNFTAddress).balanceOf(to) > 0,
-            "WhitelistNFT: Account is not whitelisted"
-        );
-
+    function claim(
+        address payable to,
+        bool isDiscordClaim
+    ) external nonReentrant onlyPermissioned returns (bool) {
         require(
             (lastClaimTimes[to] == 0) ||
                 (block.timestamp >= (lastClaimTimes[to] + cooldownDuration)),
@@ -91,7 +102,10 @@ contract FaucetV2 is
         // Update the last claim time first to guard against reentrancy
         lastClaimTimes[to] = block.timestamp;
 
-        (bool isSuccess, ) = to.call{value: claimAmount}("");
+        // if discordClaim is true, use discordClaimAmount, otherwise use claimAmount
+        uint256 dripAmount = isDiscordClaim ? discordClaimAmount : claimAmount;
+
+        (bool isSuccess, ) = to.call{value: dripAmount}("");
         require(isSuccess, "Failed to send Ether");
 
         emit Claim(to, claimAmount, block.timestamp);
@@ -111,6 +125,20 @@ contract FaucetV2 is
     }
 
     /**
+     * @dev Allows the owner to add an address to the list of permissioned addresses.
+     */
+    function addPermissionedAddress(address _address) external onlyOwner {
+        permissionedAddresses[_address] = true;
+    }
+
+    /**
+     * @dev Allows the owner to remove an address from the list of permissioned addresses.
+     */
+    function removePermissionedAddress(address _address) external onlyOwner {
+        permissionedAddresses[_address] = false;
+    }
+
+    /**
      * @dev changes the current being funded per address to `amount`.
      *
      * This function should only be callable by the contract owner
@@ -121,6 +149,14 @@ contract FaucetV2 is
         claimAmount = amount;
 
         emit AmountChanged(msg.sender, amount, block.timestamp);
+
+        return true;
+    }
+
+    function setDiscordClaimAmount(uint256 amount) external onlyOwner returns (bool) {
+        discordClaimAmount = amount;
+
+        emit DiscordClaimAmountChanged(msg.sender, amount, block.timestamp);
 
         return true;
     }
@@ -156,6 +192,21 @@ contract FaucetV2 is
     }
 
     /**
+     * @dev Allows the owner to withdraw all funds from the faucet.
+     */
+    function withdraw(uint256 amount) external onlyOwner {
+        require(amount <= address(this).balance, "Faucet: Insufficient balance");
+        (bool success, ) = msg.sender.call{value: amount}("");
+        require(success, "Faucet: Failed to send Ether");
+    }
+
+    /**
+     * @dev receive function to receive ether
+     */
+
+    receive() external payable {}
+
+     /**
      * @dev changes the new variable. Used for testing upgrade functionality
      *
      * This function should only be callable by the contract owner

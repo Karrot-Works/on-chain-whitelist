@@ -16,4 +16,7 @@ contract FaucetEvents {
 
     // Event emitted when the NFT collection is changed
     event NFTChanged(address indexed sender, address newAddress, uint256 timestamp);
+
+    // Event emitted when the discord claim amount is changed
+    event DiscordClaimAmountChanged(address indexed sender, uint256 newAmount, uint256 timestamp);
 }

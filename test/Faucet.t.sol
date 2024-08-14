@@ -14,6 +14,9 @@ contract FaucetTest is Test, BaseSetup, FaucetEvents {
     address payable proxyAddress;
 
     uint256 claimAmount;
+    uint256 discordClaimAmount = 0.001 ether;
+
+    address authorisedWorker = 0x93EDF6c557C61c4E73F152935e8D9eb6c0dFf0A4;
 
     function setUp() public override {
         BaseSetup.setUp();
@@ -34,10 +37,15 @@ contract FaucetTest is Test, BaseSetup, FaucetEvents {
 
         claimAmount = faucet.claimAmount();
 
+        faucet.setDiscordClaimAmount(discordClaimAmount);
+
         faucet.fundFaucet{value: 100 ether}();
 
         uint256 balance = faucet.balance();
         assertEq(balance, 100 ether);
+
+        // add authorised worker
+        faucet.addPermissionedAddress(authorisedWorker);
     }
 
     function test_upgradeFaucet() public {
@@ -76,8 +84,10 @@ contract FaucetTest is Test, BaseSetup, FaucetEvents {
         uint256 balanceBefore = address(user1).balance;
         assertEq(balanceBefore, 0);
 
-        bool isSuccess = faucet.claim(payable(user1));
+        vm.startPrank(authorisedWorker);
+        bool isSuccess = faucet.claim(payable(user1), false);
         assertTrue(isSuccess);
+        vm.stopPrank();
 
         uint256 balanceAfter = address(user1).balance;
         assertEq(balanceAfter, balanceBefore + claimAmount);
@@ -88,16 +98,12 @@ contract FaucetTest is Test, BaseSetup, FaucetEvents {
         // mint whitelist nft to user1
         earlyAccessNFTContract.mintTo(user1);
 
-        faucet.claim(payable(user1));
-        vm.expectRevert("Faucet: Claim too soon.");
-        faucet.claim(payable(user1));
-    }
+        vm.startPrank(authorisedWorker);
+        faucet.claim(payable(user1), false);
 
-    // test should revert if account is not whitelisted
-    function test_ExpectRevertClaimAccountNotWhitelisted() public {
-        // no mint directly claim
-        vm.expectRevert("WhitelistNFT: Account is not whitelisted");
-        faucet.claim(payable(user1));
+        vm.expectRevert("Faucet: Claim too soon.");
+        faucet.claim(payable(user1), false);
+        vm.stopPrank();
     }
 
     // test should pass when claim amount is set by owner
@@ -105,8 +111,10 @@ contract FaucetTest is Test, BaseSetup, FaucetEvents {
         bool isSuccess = faucet.setAmount(2);
         assertTrue(isSuccess);
 
+        vm.startPrank(authorisedWorker);
         uint256 amount = faucet.claimAmount();
         assertEq(amount, 2);
+        vm.stopPrank();
     }
 
     // test should revert if claim amount is set by non owner
@@ -162,11 +170,13 @@ contract FaucetTest is Test, BaseSetup, FaucetEvents {
         // mint whitelist nft to user1
         earlyAccessNFTContract.mintTo(user1);
 
-        faucet.claim(payable(user1));
+        vm.startPrank(authorisedWorker);
+        faucet.claim(payable(user1), false);
 
         // claim again
         vm.expectRevert("Faucet: Claim too soon.");
-        faucet.claim(payable(user1));
+        faucet.claim(payable(user1), false);
+        vm.stopPrank();
     }
 
     // test should pass if user claims second time after cool down
@@ -174,14 +184,33 @@ contract FaucetTest is Test, BaseSetup, FaucetEvents {
         // mint whitelist nft to user1
         earlyAccessNFTContract.mintTo(user1);
 
-        faucet.claim(payable(user1));
+        vm.startPrank(authorisedWorker);
+        faucet.claim(payable(user1), false);
 
         // skip blocktime by 60 seconds
         skip(60);
 
         // claim again
-        bool isSuccess = faucet.claim(payable(user1));
+        bool isSuccess = faucet.claim(payable(user1), false);
         assertEq(isSuccess, true);
+        vm.stopPrank();
+    }
+
+    // test should pass if user claims discord claim
+    function test_ClaimDiscordClaimShouldPass() public {
+        // mint whitelist nft to user1
+        earlyAccessNFTContract.mintTo(user1);
+
+        uint256 balanceBefore = address(user1).balance;
+        assertEq(balanceBefore, 0);
+
+        vm.startPrank(authorisedWorker);
+        bool isSuccess = faucet.claim(payable(user1), true);
+        assertTrue(isSuccess);
+        vm.stopPrank();
+
+        uint256 balanceAfter = address(user1).balance;
+        assertEq(balanceAfter, balanceBefore + discordClaimAmount);
     }
 
     // -------- events tests --------
@@ -199,9 +228,11 @@ contract FaucetTest is Test, BaseSetup, FaucetEvents {
 
         earlyAccessNFTContract.mintTo(user1);
 
+        vm.startPrank(authorisedWorker);
         vm.expectEmit(true, true, true, false);
         emit Claim(user1, claimAmount, block.timestamp);
-        faucet.claim(payable(user1));
+        faucet.claim(payable(user1), false);
+        vm.stopPrank();
     }
 
     // test amount changed event

@@ -26,6 +26,8 @@ contract Faucet is
     mapping(address => uint256) private lastClaimTimes;
     mapping(address => bool) private permissionedAddresses;
 
+    uint256 public discordClaimAmount;
+
     function initialize(
         address _whitelistNFTAddress,
         uint256 _claimAmount,
@@ -82,7 +84,8 @@ contract Faucet is
      * Emits a {Claim} event.
      */
     function claim(
-        address payable to
+        address payable to,
+        bool isDiscordClaim
     ) external nonReentrant onlyPermissioned returns (bool) {
         require(
             (lastClaimTimes[to] == 0) ||
@@ -93,7 +96,10 @@ contract Faucet is
         // Update the last claim time first to guard against reentrancy
         lastClaimTimes[to] = block.timestamp;
 
-        (bool isSuccess, ) = to.call{value: claimAmount}("");
+        // if discordClaim is true, use discordClaimAmount, otherwise use claimAmount
+        uint256 dripAmount = isDiscordClaim ? discordClaimAmount : claimAmount;
+
+        (bool isSuccess, ) = to.call{value: dripAmount}("");
         require(isSuccess, "Failed to send Ether");
 
         emit Claim(to, claimAmount, block.timestamp);
@@ -137,6 +143,14 @@ contract Faucet is
         claimAmount = amount;
 
         emit AmountChanged(msg.sender, amount, block.timestamp);
+
+        return true;
+    }
+
+    function setDiscordClaimAmount(uint256 amount) external onlyOwner returns (bool) {
+        discordClaimAmount = amount;
+
+        emit DiscordClaimAmountChanged(msg.sender, amount, block.timestamp);
 
         return true;
     }

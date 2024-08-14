@@ -24,7 +24,7 @@ interface IFaucet {
      *
      * Emits a {Transfer} event.
      */
-    function claim(address payable to) external returns (bool);
+    function claim(address payable to, bool isDiscordClaim) external returns (bool);
 
     /**
      *  @dev allows anyone to deposit to the faucet
