@@ -3,7 +3,7 @@ pragma solidity ^0.8.25;
 
 import {Test, console} from "forge-std/Test.sol";
 import {Upgrades} from "openzeppelin-foundry-upgrades/Upgrades.sol";
-import {BaseSetup, MaliciousContract} from "./BaseSetup.t.sol";
+import {BaseSetup, MaliciousContract, Token} from "./BaseSetup.t.sol";
 import {FaucetEvents} from "../src/FaucetEvents.sol";
 import "../src/Faucet.sol";
 import "./FaucetV2.sol";
@@ -20,15 +20,17 @@ contract FaucetTest is Test, BaseSetup, FaucetEvents {
 
     function setUp() public override {
         BaseSetup.setUp();
-        address payable _proxyAddress = payable(Upgrades.deployUUPSProxy(
-            "Faucet.sol",
-            abi.encodeWithSignature(
-                "initialize(address,uint256,uint256)",
-                address(earlyAccessNFTAddress),
-                0.1 ether,
-                60
+        address payable _proxyAddress = payable(
+            Upgrades.deployUUPSProxy(
+                "Faucet.sol",
+                abi.encodeWithSignature(
+                    "initialize(address,uint256,uint256)",
+                    address(earlyAccessNFTAddress),
+                    0.1 ether,
+                    60
+                )
             )
-        ));
+        );
         implementationAddress = Upgrades.getImplementationAddress(
             _proxyAddress
         );
@@ -39,6 +41,8 @@ contract FaucetTest is Test, BaseSetup, FaucetEvents {
 
         faucet.setDiscordClaimAmount(discordClaimAmount);
 
+        faucet.setClaimAmountUSDC(1);
+
         faucet.fundFaucet{value: 100 ether}();
 
         uint256 balance = faucet.balance();
@@ -46,6 +50,18 @@ contract FaucetTest is Test, BaseSetup, FaucetEvents {
 
         // add authorised worker
         faucet.addPermissionedAddress(authorisedWorker);
+
+        // Deploy ERC20 tokens
+        usdc = new Token("USD Coin", "USDC", address(faucet));
+        usdt = new Token("Tether", "USDT", address(faucet));
+
+        // check usdc balance
+        uint256 usdcBalance = usdc.balanceOf(proxyAddress);
+        assertEq(usdcBalance, 1000);
+
+        // set usdc address
+        faucet.setUsdcAddress(address(usdc));
+        faucet.setUsdtAddress(address(usdt));
     }
 
     function test_upgradeFaucet() public {
@@ -213,6 +229,66 @@ contract FaucetTest is Test, BaseSetup, FaucetEvents {
         assertEq(balanceAfter, balanceBefore + discordClaimAmount);
     }
 
+    function test_claimUSDCShouldPass() public {
+        // Check faucet's USDC balance before the claim
+        uint256 faucetUSDCBalanceBefore = usdc.balanceOf(address(faucet));
+        console.log(
+            "Faucet USDC Balance Before Claim:",
+            faucetUSDCBalanceBefore
+        );
+
+        // usdc balance before claim
+        uint256 balanceBefore = usdc.balanceOf(user1);
+        assertEq(balanceBefore, 0);
+
+        vm.startPrank(authorisedWorker);
+        // send usdc to user1
+        faucet.claimUSDC(user1);
+        vm.stopPrank();
+
+        // check usdc balance after transfer
+        uint256 balanceAfter = usdc.balanceOf(user1);
+
+        // The balance should increase by the `claimAmountUSDC`, which was set to 1 in setUp
+        assertEq(balanceAfter, balanceBefore + faucet.claimAmountUSDC());
+
+        // check faucet usdc balance
+        uint256 faucetUSDCBalance = usdc.balanceOf(address(faucet));
+
+        // The faucet's balance should decrease by `claimAmountUSDC`
+        assertEq(faucetUSDCBalance, 1000 - faucet.claimAmountUSDC());
+    }
+
+    function test_claimUSDTShouldPass() public {
+        // Check faucet's USDT balance before the claim
+        uint256 faucetUSDTBalanceBefore = usdt.balanceOf(address(faucet));
+        console.log(
+            "Faucet USDT Balance Before Claim:",
+            faucetUSDTBalanceBefore
+        );
+
+        // usdt balance before claim
+        uint256 balanceBefore = usdt.balanceOf(user1);
+        assertEq(balanceBefore, 0);
+
+        vm.startPrank(authorisedWorker);
+        // send usdt to user1
+        faucet.claimUSDT(user1);
+        vm.stopPrank();
+
+        // check usdt balance after transfer
+        uint256 balanceAfter = usdt.balanceOf(user1);
+
+        // The balance should increase by the `claimAmountUSDT`, which was set to 1 in setUp
+        assertEq(balanceAfter, balanceBefore + faucet.claimAmountUSDT());
+
+        // check faucet usdt balance
+        uint256 faucetUSDTBalance = usdt.balanceOf(address(faucet));
+
+        // The faucet's balance should decrease by `claimAmountUSDT`
+        assertEq(faucetUSDTBalance, 1000 - faucet.claimAmountUSDT());
+    }
+
     // -------- events tests --------
 
     // test funded event
@@ -259,9 +335,7 @@ contract FaucetTest is Test, BaseSetup, FaucetEvents {
     // -------- reentrancy attack tests --------
     function test_ShouldRevertReentrancyAttack() public {
         // Deploy a malicious contract
-        MaliciousContract maliciousContract = new MaliciousContract(
-            faucet
-        );
+        MaliciousContract maliciousContract = new MaliciousContract(faucet);
 
         // Mint whitelist NFT to malicious contract
         earlyAccessNFTContract.mintTo(address(maliciousContract));
