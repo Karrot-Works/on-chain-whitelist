@@ -3,6 +3,7 @@ pragma solidity ^0.8.13;
 
 import {IFaucet} from "./IFaucet.sol";
 import {IERC721} from "@openzeppelin/contracts/token/ERC721/IERC721.sol";
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {ReentrancyGuardUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol";
 import {FaucetEvents} from "./FaucetEvents.sol";
 import "openzeppelin-contracts/contracts/access/Ownable.sol";
@@ -27,6 +28,14 @@ contract Faucet is
     mapping(address => bool) private permissionedAddresses;
 
     uint256 public discordClaimAmount;
+    uint256 public claimAmountUSDC;
+    mapping(address => uint256) public lastClaimTimesUSDC;
+
+    uint256 public claimAmountUSDT;
+    mapping(address => uint256) public lastClaimTimesUSDT;
+
+    IERC20 public stablecoinUSDCAddress;
+    IERC20 public stablecoinUSDTAddress;
 
     function initialize(
         address _whitelistNFTAddress,
@@ -107,6 +116,44 @@ contract Faucet is
         return isSuccess;
     }
 
+    function claimUSDC(
+        address to
+    ) external nonReentrant onlyPermissioned returns (bool) {
+        require(
+            (lastClaimTimesUSDC[to] == 0) ||
+                (block.timestamp >= (lastClaimTimesUSDC[to] + cooldownDuration)),
+            "Faucet: Claim too soon."
+        );
+
+        // Update the last claim time first to guard against reentrancy
+        lastClaimTimesUSDC[to] = block.timestamp;
+
+        stablecoinUSDCAddress.transfer(to, claimAmountUSDC);
+
+        emit Claim(to, claimAmountUSDC, block.timestamp);
+
+        return true;
+    }
+
+    function claimUSDT(
+        address to
+    ) external nonReentrant onlyPermissioned returns (bool) {
+        require(
+            (lastClaimTimesUSDT[to] == 0) ||
+                (block.timestamp >= (lastClaimTimesUSDT[to] + cooldownDuration)),
+            "Faucet: Claim too soon."
+        );
+
+        // Update the last claim time first to guard against reentrancy
+        lastClaimTimesUSDT[to] = block.timestamp;
+
+        stablecoinUSDTAddress.transfer(to, claimAmountUSDT);
+
+        emit Claim(to, claimAmountUSDT, block.timestamp);
+
+        return true;
+    }
+
     /**
      *  @dev allows anyone to deposit to the faucet
      *
@@ -183,6 +230,30 @@ contract Faucet is
 
         emit NFTChanged(msg.sender, newAddress, block.timestamp);
         return true;
+    }
+
+    /**
+     * @dev function to set the USDC address
+     * @param _usdcAddress the address of the USDC token
+     */
+    function setUsdcAddress(address _usdcAddress) external onlyOwner {
+        stablecoinUSDCAddress = IERC20(_usdcAddress);
+    }
+
+    function setClaimAmountUSDC(uint256 amount) external onlyOwner {
+        claimAmountUSDC = amount;
+    }
+
+    function setClaimAmountUSDT(uint256 amount) external onlyOwner {
+        claimAmountUSDT = amount;
+    }
+
+    /**
+     * @dev function to set the USDT address
+     * @param _usdtAddress the address of the USDT token
+     */
+    function setUsdtAddress(address _usdtAddress) external onlyOwner {
+        stablecoinUSDTAddress = IERC20(_usdtAddress);
     }
 
     /**
