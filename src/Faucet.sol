@@ -84,6 +84,20 @@ contract Faucet is
     }
 
     /**
+     * @dev Returns the block time at which USDC was claimed by `account`.
+     */
+    function lastClaimedUSDC(address account) external view returns (uint256) {
+        return lastClaimTimesUSDC[account];
+    }
+
+    /**
+     * @dev Returns the block time at which USDT was claimed by `account`.
+     */
+    function lastClaimedUSDT(address account) external view returns (uint256) {
+        return lastClaimTimesUSDT[account];
+    }
+
+    /**
      * @dev Moves tokens from the faucet account to `to`.
      *
      * It makes a call to the `balanceOf` method of the Whitelist NFT collection, to make sure that address `to` holds a whitelist NFT.
