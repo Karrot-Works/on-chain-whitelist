@@ -17,14 +17,14 @@ const config: HardhatUserConfig = {
   networks: {
     hardhat: {
     },
-    "kakarot-sepolia": {
+    "kakarot-starknet-sepolia": {
       url: "https://sepolia-rpc.kakarot.org",
       accounts: [privateKey!]
     },
     "anvil": {
       url: "http://127.0.0.1:8545",
       accounts: [privateKey!]
-    }
+    },
   },
   etherscan: {
     apiKey: {
